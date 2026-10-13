@@ -1,0 +1,6 @@
+.env
+*.local.json
+*.local.jsonc
+
+# macOS
+.DS_Store

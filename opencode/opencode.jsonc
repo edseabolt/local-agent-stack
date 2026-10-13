@@ -1,0 +1,701 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp",
+  "update": "notify",
+  "plugins": [],
+  "agents": {
+    "title": {
+      "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
+    },
+    "summary": {
+      "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
+    },
+    "planner": {
+      "model": "oMLX/oQ/Qwen3.8-Flash-Next-oQ4-mtp"
+    },
+    "plan-reviewer": {
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
+    },
+    "executor": {
+      "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
+    },
+    "test-runner": {
+      "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
+    },
+    "reviewer": {
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
+    },
+    "debugger": {
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
+    }
+  },
+  "permissions": [
+    {
+      "action": "read",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "edit",
+      "resource": "*",
+      "effect": "ask"
+    },
+    {
+      "action": "subagent",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "external_directory",
+      "resource": "{env:HOME}/.config/opencode/**",
+      "effect": "allow"
+    },
+    {
+      "action": "external_directory",
+      "resource": "{env:HOME}/.local/share/opencode/**",
+      "effect": "allow"
+    },
+    {
+      "action": "external_directory",
+      "resource": "{env:HOME}/.omlx/**",
+      "effect": "allow"
+    },
+    {
+      "action": "external_directory",
+      "resource": "{env:HOME}/git/omlx/**",
+      "effect": "allow"
+    },
+    {
+      "action": "external_directory",
+      "resource": "{env:HOME}/git/opencode/**",
+      "effect": "allow"
+    },
+    {
+      "action": "external_directory",
+      "resource": "/tmp/**",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "awk *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "basename *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "base64 *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "cat *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "cksum *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "cmp *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "column *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "cut *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "date",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "diff *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "dirname *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "du *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "echo *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "false",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "file *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "find *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "fold *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "fmt *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "gh *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git blame *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git branch *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git cat-file *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git check-ignore *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git config --get *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git config --list",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git describe *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git diff *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git diff-tree *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git for-each-ref *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git grep *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git log *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git ls-files *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git ls-tree *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git merge-base *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git reflog *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git remote *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git rev-parse *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git shortlog *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git show *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git stash *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git status *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git symbolic-ref *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git tag *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git worktree list",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "grep *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "head *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "hexdump *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "hostname",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "id",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "jq *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "ls *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "md5 *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "md5sum *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "memory_pressure",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "nl *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "npm run ci *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "npm run lint *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "npm run ci:host",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "npm test *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "npx prettier *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "npx tsc *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "od *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "paste *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "printf *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "ps *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "readlink *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "realpath *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "rev *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "rg *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "shasum *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "sha256sum *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "sleep *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "sort *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "stat *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "strings *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "sw_vers",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "sysctl *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "tac *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "tail *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "test *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "tr *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "true",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "tree *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "uname *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "uniq *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "uptime",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "vm_stat",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "wc *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "which *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "whoami",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "xxd *",
+      "effect": "allow"
+    }
+  ],
+  "providers": {
+    "oMLX": {
+      "name": "oMLX",
+      "package": "aisdk:@ai-sdk/openai-compatible",
+      "settings": {
+        "baseURL": "{env:OMLX_BASE_URL}",
+        "apiKey": "{env:OMLX_API_KEY}"
+      },
+      "models": {
+        "oQ/GLM-5.3-Flash-oQ4-mtp": {
+          "name": "GLM-5.3 Flash (local)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "variants": [
+            {
+              "id": "precise",
+              "body": {
+                "temperature": 0.1
+              }
+            },
+            {
+              "id": "balanced",
+              "body": {
+                "temperature": 0.5
+              }
+            },
+            {
+              "id": "creative",
+              "body": {
+                "temperature": 0.9
+              }
+            }
+          ]
+        },
+        "oQ/Qwen3.8-Flash-Next-oQ4-mtp": {
+          "name": "Qwen3.8 Flash-Next (local)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          },
+          "variants": [
+            {
+              "id": "precise",
+              "body": {
+                "temperature": 0.1
+              }
+            },
+            {
+              "id": "balanced",
+              "body": {
+                "temperature": 0.5
+              }
+            },
+            {
+              "id": "creative",
+              "body": {
+                "temperature": 0.9
+              }
+            }
+          ]
+        },
+        "oQ/Qwen3.8-27B-oQ8-mtp": {
+          "name": "Qwen3.8 27B (local)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          },
+          "variants": [
+            {
+              "id": "precise",
+              "body": {
+                "temperature": 0.1
+              }
+            },
+            {
+              "id": "balanced",
+              "body": {
+                "temperature": 0.5
+              }
+            },
+            {
+              "id": "creative",
+              "body": {
+                "temperature": 0.9
+              }
+            }
+          ]
+        },
+        "oQ/Ornith-1.5-35B-A3B-oQ8-mtp": {
+          "name": "Ornith-1.5 35B A3B (local)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          },
+          "variants": [
+            {
+              "id": "precise",
+              "body": {
+                "temperature": 0.1
+              }
+            },
+            {
+              "id": "balanced",
+              "body": {
+                "temperature": 0.5
+              }
+            },
+            {
+              "id": "creative",
+              "body": {
+                "temperature": 0.9
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
