@@ -1,6 +1,8 @@
 .env
 *.local.json
 *.local.jsonc
+bench-*.json
 
 # macOS
 .DS_Store
+__pycache__/
