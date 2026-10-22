@@ -17,10 +17,10 @@
       "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
     },
     "executor": {
-      "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
+      "model": "oMLX/oQ/Qwen3.8-27B-oQ8-mtp"
     },
     "test-runner": {
-      "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
+      "model": "oMLX/oQ/Qwen3.8-27B-oQ8-mtp"
     },
     "reviewer": {
       "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
@@ -357,17 +357,7 @@
     },
     {
       "action": "shell",
-      "resource": "npm run ci *",
-      "effect": "allow"
-    },
-    {
-      "action": "shell",
-      "resource": "npm run lint *",
-      "effect": "allow"
-    },
-    {
-      "action": "shell",
-      "resource": "npm run ci:host",
+      "resource": "npm run *",
       "effect": "allow"
     },
     {
@@ -534,6 +524,26 @@
       "action": "shell",
       "resource": "xxd *",
       "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git worktree remove *",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git worktree prune *",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git push* --force*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "gh pr merge *",
+      "effect": "ask"
     }
   ],
   "providers": {
@@ -633,7 +643,7 @@
             ]
           },
           "limit": {
-            "context": 262144,
+            "context": 131072,
             "output": 65536
           },
           "variants": [
