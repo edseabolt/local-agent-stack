@@ -28,8 +28,8 @@ All four are quantized with oMLX's oQ format, and all run with MTP (multi-token 
 |---|---|---|---|---|---|---|
 | GLM-5.3-Flash | oQ6 | 256K in OpenCode (server allows 1M) | text, image | ~486–560 | ~41–71 | All agent roles run on it. Decode rises with context (41.4 at pp1024 → 70.6 at pp131072). |
 | Qwen3.8-Flash-Next | oQ4 | 256K | text, image | ~1126–1358 | ~58–104 | Fastest flat prefill; defined but no agent role uses it today. |
-| Ornith-1.5-35B-A3B | oQ8 | 256K | text, image, video | 2410–3095, ~1100 at pp131072 | 133–158, ~101 at pp131072 | MoE, ~3B active parameters. Fastest short-context model. Pinned in memory. Runs title and summary. |
-| Qwen3.8-27B | oQ8 | 128K | text, image, video | ~405–427, ~266 at pp131072 | ~41–66 | Dense. Defined but no agent role uses it today. |
+| Ornith-1.5-35B-A3B | oQ8 | 256K | text, image, video | ~2331–3086, ~1108 at pp131072 | ~131–158, ~102 at pp131072 | MoE, ~3B active parameters. Fastest short-context model. Pinned in memory. Runs title and summary. |
+| Qwen3.8-27B | oQ8 | 128K | text, image, video | ~410–435, ~271 at pp131072 | ~43–71, non-monotonic with context | Dense. Defined but no agent role uses it today. |
 
 Full per-context tables, median and min–max, and methodology:
 [docs/benchmarks-current.md](docs/benchmarks-current.md). Qwen3.8-Flash-Next and Qwen3.8-27B stay loaded and benchmarked, but no agent role points at them right now.
