@@ -137,8 +137,14 @@ def render(text, env, jsonc=False):
     user = getpass.getuser()
     text = text.replace("/Users/YOUR_USER", f"/Users/{user}")
     text = text.replace("your-mac.local", env["OMLX_HOST"])
-    text = text.replace("REPLACE_ME_WITH_openssl_rand_-hex_32", env["OMLX_SECRET_KEY"])
-    text = re.sub(r'"REPLACE_ME[^"]*"', f'"{env["OMLX_API_KEY"]}"', text)
+    text = re.sub(
+        r'("secret_key":\s*")REPLACE_ME[^"]*(")',
+        rf"\g<1>{env['OMLX_SECRET_KEY']}\g<2>", text,
+    )
+    text = re.sub(
+        r'("api_key":\s*")REPLACE_ME[^"]*(")',
+        rf"\g<1>{env['OMLX_API_KEY']}\g<2>", text,
+    )
     if jsonc:
         # The installed client config must work without sourcing .env: resolve
         # the connection placeholders to literals (HOME is always set, keep it).
@@ -178,13 +184,14 @@ def install_file(src, dst, env, dry_run):
         os.chmod(dst, 0o600 if dst.suffix == ".json" or jsonc else 0o644)
         if b:
             return f"installed  {dst}  (backup: {b.name})"
-    return f"installed  {dst}"
+        return f"installed  {dst}"
+    return f"would install  {dst}"
 
 
 def install_dir(src, dst, dry_run):
     """Merge skills into the live dir — never remove skills the repo doesn't own."""
     if dry_run:
-        return f"merge      {dst}/ (skills: {', '.join(p.name for p in src.iterdir())})"
+        return f"would merge {dst}/ (skills: {', '.join(p.name for p in src.iterdir())})"
     dst.mkdir(parents=True, exist_ok=True)
     # skill backups live outside the skills dir — the skill scanner reads
     # every immediate child of dst, so a *.bak dir would load as a skill
