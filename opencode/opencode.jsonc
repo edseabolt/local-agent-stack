@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp",
+  "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp",
   "update": "notify",
   "plugins": [],
   "agents": {
@@ -11,22 +11,22 @@
       "model": "oMLX/oQ/Ornith-1.5-35B-A3B-oQ8-mtp"
     },
     "planner": {
-      "model": "oMLX/oQ/Qwen3.8-Flash-Next-oQ4-mtp"
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp"
     },
     "plan-reviewer": {
-      "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp"
     },
     "executor": {
-      "model": "oMLX/oQ/Qwen3.8-27B-oQ8-mtp"
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp"
     },
     "test-runner": {
-      "model": "oMLX/oQ/Qwen3.8-27B-oQ8-mtp"
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp"
     },
     "reviewer": {
-      "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp"
     },
     "debugger": {
-      "model": "oMLX/oQ/GLM-5.3-Flash-oQ4-mtp"
+      "model": "oMLX/oQ/GLM-5.3-Flash-oQ6-mtp"
     }
   },
   "permissions": [
@@ -537,7 +537,7 @@
     },
     {
       "action": "shell",
-      "resource": "git push* --force*",
+      "resource": "git push * --force*",
       "effect": "ask"
     },
     {
@@ -555,7 +555,7 @@
         "apiKey": "{env:OMLX_API_KEY}"
       },
       "models": {
-        "oQ/GLM-5.3-Flash-oQ4-mtp": {
+        "oQ/GLM-5.3-Flash-oQ6-mtp": {
           "name": "GLM-5.3 Flash (local)",
           "capabilities": {
             "tools": true,
@@ -568,7 +568,7 @@
             ]
           },
           "limit": {
-            "context": 1048576,
+            "context": 262144,
             "output": 65536
           },
           "variants": [

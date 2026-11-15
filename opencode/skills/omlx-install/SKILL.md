@@ -17,17 +17,26 @@ hard rule) — and only when the user asked for an install/sync.
    resolution, highest wins:
    - existing `.env`
    - values harvested from the installed `~/.omlx/settings.json`
-     (`auth.api_key`, `auth.secret_key`, first non-localhost `server_aliases` entry)
+     (`auth.api_key`, `auth.secret_key`, first `server_aliases` entry that is
+     not a placeholder — `localhost`, `127.0.0.1`, `your-mac.local` are skipped)
    - generated: hex-32 keys via `secrets.token_hex(32)`, hostname via
      `scutil --get LocalHostName` + `.local`
-   - `OMLX_BASE_URL` is always derived: `http://$OMLX_HOST:8000/v1`
-2. **Render and install** (backing up each overwritten file as `<name>.bak.<ts>`):
+   - `OMLX_BASE_URL` is derived as `http://$OMLX_HOST:8000/v1` only when
+     missing or an unfilled placeholder; a custom value in `.env` (e.g. a
+     changed port) wins
+2. **Render and install** (backing up each overwritten file as `<name>.bak.<ts>`,
+   written next to the target — except skill backups, which go to
+   `~/.config/opencode/.skill-backups/`):
    | Repo file | Target |
    |---|---|
-   | `omlx/settings.json` | `~/.omlx/settings.json` (chmod 600 — contains keys) |
+   | `omlx/settings.json` | `~/.omlx/settings.json` |
    | `omlx/model_settings.json` | `~/.omlx/model_settings.json` |
    | `opencode/opencode.jsonc` | `~/.config/opencode/opencode.jsonc` |
-   | `opencode/skills/` | `~/.config/opencode/skills/` (replaced wholesale) |
+   | `opencode/skills/` | `~/.config/opencode/skills/` (merged: repo-owned skills replaced, unowned skills preserved) |
+
+   All three config targets are chmod 600 — they carry the API key after
+   rendering (`model_settings.json` and the installed `opencode.jsonc`
+   included).
 
 ## Sentinel → source mapping
 

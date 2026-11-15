@@ -1,4 +1,5 @@
 .env
+.opencode/
 *.local.json
 *.local.jsonc
 bench-*.json

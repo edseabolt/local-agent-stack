@@ -124,6 +124,16 @@ table when `--runs > 1`.
 Timeouts: a full 4-pp + 3-batch run can take several minutes (pp131072 prefill
 dominates); let it run, do not poll with separate curl calls.
 
+**Monitoring (required):** run `run_bench.py` in the **foreground** with an
+explicit long timeout (3600000 ms) so the call blocks until the process exits
+and the tables arrive directly in the tool result — do not background it and
+do not end the turn while it runs. If the harness's maximum foreground timeout
+is shorter than the expected run time, background it instead and wait for the
+harness's completion notification (never ask the user to report completion;
+never end the response while the bench is still running). Once the script
+exits, immediately continue with Step 3 using the output and raw JSON paths
+from the result.
+
 For multiple models, run them sequentially — the endpoint enforces one bench at
 a time anyway (409).
 

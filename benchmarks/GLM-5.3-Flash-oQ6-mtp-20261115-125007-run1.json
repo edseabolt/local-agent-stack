@@ -1,0 +1,302 @@
+{
+  "bench_id": "bench-de44c74c7501",
+  "status": "completed",
+  "context_profile": "code_python",
+  "results": [
+    {
+      "test_type": "single",
+      "pp": 1024,
+      "tg": 256,
+      "ttft_ms": 2101.7,
+      "tpot_ms": 23.03,
+      "gen_tps": 43.6,
+      "processing_tps": 487.2,
+      "e2e_latency_s": 7.979,
+      "total_throughput": 160.4,
+      "peak_memory_bytes": 265830260670,
+      "prompt_tokens": 1024,
+      "completion_tokens": 256,
+      "cached_tokens": 0,
+      "system_metrics": {
+        "sample_count": 31,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 10.6,
+          "total_max": 15.2,
+          "p_avg": 3.3,
+          "e_avg": 32.8
+        },
+        "memory": {
+          "phys_footprint_peak": 248.54,
+          "mlx_active_peak": 247.52,
+          "mlx_cache_peak": 0.31,
+          "system_used_peak": 294.27,
+          "system_wired_peak": 258.7,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 96.4,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 0,
+          "max": 0
+        }
+      }
+    },
+    {
+      "test_type": "single",
+      "pp": 4096,
+      "tg": 256,
+      "ttft_ms": 7286.4,
+      "tpot_ms": 24.5,
+      "gen_tps": 41.0,
+      "processing_tps": 562.1,
+      "e2e_latency_s": 13.538,
+      "total_throughput": 321.5,
+      "peak_memory_bytes": 266924589529,
+      "prompt_tokens": 4096,
+      "completion_tokens": 256,
+      "cached_tokens": 0,
+      "system_metrics": {
+        "sample_count": 53,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 9.9,
+          "total_max": 14.3,
+          "p_avg": 2.3,
+          "e_avg": 32.9
+        },
+        "memory": {
+          "phys_footprint_peak": 250.0,
+          "mlx_active_peak": 248.28,
+          "mlx_cache_peak": 1.34,
+          "system_used_peak": 295.77,
+          "system_wired_peak": 259.96,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 98.3,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 0,
+          "max": 0
+        }
+      }
+    },
+    {
+      "test_type": "single",
+      "pp": 32768,
+      "tg": 256,
+      "ttft_ms": 62794.0,
+      "tpot_ms": 19.2,
+      "gen_tps": 52.3,
+      "processing_tps": 521.8,
+      "e2e_latency_s": 67.717,
+      "total_throughput": 487.7,
+      "peak_memory_bytes": 267599554432,
+      "prompt_tokens": 32768,
+      "completion_tokens": 256,
+      "cached_tokens": 0,
+      "system_metrics": {
+        "sample_count": 265,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 9.5,
+          "total_max": 14.3,
+          "p_avg": 1.2,
+          "e_avg": 34.4
+        },
+        "memory": {
+          "phys_footprint_peak": 251.22,
+          "mlx_active_peak": 249.21,
+          "mlx_cache_peak": 2.19,
+          "system_used_peak": 297.22,
+          "system_wired_peak": 261.75,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 99.4,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 0,
+          "max": 0
+        }
+      }
+    },
+    {
+      "test_type": "single",
+      "pp": 131072,
+      "tg": 256,
+      "ttft_ms": 259562.7,
+      "tpot_ms": 14.2,
+      "gen_tps": 70.7,
+      "processing_tps": 505.0,
+      "e2e_latency_s": 263.228,
+      "total_throughput": 498.9,
+      "peak_memory_bytes": 269021629498,
+      "prompt_tokens": 131072,
+      "completion_tokens": 256,
+      "cached_tokens": 0,
+      "system_metrics": {
+        "sample_count": 1020,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 10.3,
+          "total_max": 22.9,
+          "p_avg": 1.1,
+          "e_avg": 38.1
+        },
+        "memory": {
+          "phys_footprint_peak": 252.74,
+          "mlx_active_peak": 250.55,
+          "mlx_cache_peak": 2.35,
+          "system_used_peak": 298.64,
+          "system_wired_peak": 262.88,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 99.6,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 0,
+          "max": 2
+        }
+      }
+    },
+    {
+      "test_type": "batch",
+      "pp": 1024,
+      "tg": 256,
+      "pp_tps": 525.3,
+      "tg_tps": 40.7,
+      "avg_ttft_ms": 3871.0,
+      "e2e_latency_s": 16.478,
+      "peak_memory_bytes": 266537868366,
+      "total_gen_tokens": 512,
+      "batch_size": 2,
+      "system_metrics": {
+        "sample_count": 64,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 14.6,
+          "total_max": 18.5,
+          "p_avg": 3.3,
+          "e_avg": 48.8
+        },
+        "memory": {
+          "phys_footprint_peak": 249.19,
+          "mlx_active_peak": 247.99,
+          "mlx_cache_peak": 0.82,
+          "system_used_peak": 294.79,
+          "system_wired_peak": 259.05,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 97.1,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 1,
+          "max": 1
+        }
+      }
+    },
+    {
+      "test_type": "batch",
+      "pp": 1024,
+      "tg": 256,
+      "pp_tps": 546.0,
+      "tg_tps": 56.6,
+      "avg_ttft_ms": 7355.3,
+      "e2e_latency_s": 25.589,
+      "peak_memory_bytes": 267679614226,
+      "total_gen_tokens": 1024,
+      "batch_size": 4,
+      "system_metrics": {
+        "sample_count": 98,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 13.5,
+          "total_max": 17.0,
+          "p_avg": 2.5,
+          "e_avg": 46.6
+        },
+        "memory": {
+          "phys_footprint_peak": 250.65,
+          "mlx_active_peak": 249.12,
+          "mlx_cache_peak": 2.09,
+          "system_used_peak": 296.09,
+          "system_wired_peak": 260.23,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 97.4,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 1,
+          "max": 1
+        }
+      }
+    },
+    {
+      "test_type": "batch",
+      "pp": 1024,
+      "tg": 256,
+      "pp_tps": 193.3,
+      "tg_tps": 123.5,
+      "avg_ttft_ms": 22399.6,
+      "e2e_latency_s": 58.96,
+      "peak_memory_bytes": 267493096230,
+      "total_gen_tokens": 2048,
+      "batch_size": 8,
+      "system_metrics": {
+        "sample_count": 227,
+        "interval_s": 0.25,
+        "cpu": {
+          "total_avg": 13.5,
+          "total_max": 18.8,
+          "p_avg": 2.8,
+          "e_avg": 45.8
+        },
+        "memory": {
+          "phys_footprint_peak": 250.39,
+          "mlx_active_peak": 248.78,
+          "mlx_cache_peak": 2.39,
+          "system_used_peak": 295.39,
+          "system_wired_peak": 259.68,
+          "total_ram": 512
+        },
+        "gpu": {
+          "util_avg": 97.4,
+          "util_max": 100.0
+        },
+        "thermal": {
+          "start": 1,
+          "max": 1
+        }
+      }
+    }
+  ],
+  "error": null,
+  "upload_state": {
+    "phase": "uploading",
+    "results": [],
+    "total": 0,
+    "success_count": 0,
+    "failed_count": 0,
+    "owner_hash": null,
+    "skipped_reason": null,
+    "skipped_features": [],
+    "feature_flags": [
+      {
+        "key": "lightning_mtp",
+        "label": "Lightning MTP"
+      }
+    ]
+  }
+}

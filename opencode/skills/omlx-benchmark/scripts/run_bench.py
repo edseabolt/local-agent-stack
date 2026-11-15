@@ -21,30 +21,67 @@ effect (2026-10-21): first short test after idle ran prefill 44% slower
 (293.9 vs ~517 tok/s) without this.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
-import statistics
 import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Any
 
-VALID_PP = [1024, 4096, 8192, 16384, 32768, 65536, 131072, 200000]
-VALID_BATCH = [2, 4, 8]
-VALID_PROFILES = ["code_python", "code_mixed", "novel_en", "novel_ja", "novel_ko"]
+from bench_common import collect, fmt_stats, project_output_dir
 
-
-def project_output_dir():
-    """Default output dir: <git-repo-root>/benchmarks, else ./benchmarks."""
-    d = Path.cwd()
-    for p in (d, *d.parents):
-        if (p / ".git").exists():
-            return p / "benchmarks"
-    return d / "benchmarks"
+VALID_PP: list[int] = [1024, 4096, 8192, 16384, 32768, 65536, 131072, 200000]
+VALID_BATCH: list[int] = [2, 4, 8]
+VALID_PROFILES: list[str] = ["code_python", "code_mixed", "novel_en", "novel_ja", "novel_ko"]
 
 
-def load_connection(args):
+def api(
+    method: str,
+    url: str,
+    api_key: str,
+    body: dict[str, Any] | None = None,
+    timeout: float = 60,
+) -> dict[str, Any]:
+    """Call one admin API endpoint and decode the JSON response.
+
+    Args:
+        method: HTTP method, e.g. "GET" or "POST".
+        url: Absolute admin API URL.
+        api_key: Bearer token for the Authorization header.
+        body: Optional JSON-serializable request payload.
+        timeout: Socket timeout in seconds.
+
+    Returns:
+        The decoded JSON response.
+
+    Raises:
+        urllib.error.HTTPError: On a non-2xx response.
+        urllib.error.URLError: When the server is unreachable.
+    """
+    req = urllib.request.Request(url, method=method)
+    req.add_header("Authorization", f"Bearer {api_key}")
+    data = None
+    if body is not None:
+        req.add_header("Content-Type", "application/json")
+        data = json.dumps(body).encode()
+    with urllib.request.urlopen(req, data=data, timeout=timeout) as resp:
+        return json.loads(resp.read())
+
+
+def load_connection(args: argparse.Namespace) -> tuple[str, int, str | None]:
+    """Resolve the server connection settings.
+
+    Args:
+        args: Parsed CLI args; --host/--port/--api-key win when given.
+
+    Returns:
+        (host, port, api_key) from CLI flags, else ~/.omlx/settings.json,
+        else the built-in defaults (127.0.0.1, 8000, None).
+    """
     settings_path = Path.home() / ".omlx" / "settings.json"
     host, port, api_key = "127.0.0.1", 8000, None
     if settings_path.exists():
@@ -58,19 +95,16 @@ def load_connection(args):
     return args.host or host, args.port or port, args.api_key or api_key
 
 
-def api(method, url, api_key, body=None, timeout=60):
-    req = urllib.request.Request(url, method=method)
-    req.add_header("Authorization", f"Bearer {api_key}")
-    data = None
-    if body is not None:
-        req.add_header("Content-Type", "application/json")
-        data = json.dumps(body).encode()
-    with urllib.request.urlopen(req, data=data, timeout=timeout) as resp:
-        return json.loads(resp.read())
+def load_context_limit(model_id: str) -> int | None:
+    """Look up a model's context window in the installed model settings.
 
+    Args:
+        model_id: Server-form model id, e.g. GLM-5.3-Flash-oQ4-mtp.
 
-def load_context_limit(model_id):
-    """Return max_context_window for the model, or None if unknown."""
+    Returns:
+        max_context_window for the model, or None when the file, entry,
+        or field is missing.
+    """
     settings_path = Path.home() / ".omlx" / "model_settings.json"
     if not settings_path.exists():
         return None
@@ -81,10 +115,19 @@ def load_context_limit(model_id):
         return None
 
 
-def model_exists(base, api_key, model_id):
-    """Pre-flight: check the model id against the server's list. Returns
-    (True, None) if present, (False, available-ids) if not, (None, None) if
-    the check itself fails (server unreachable etc. — let the real call decide)."""
+def model_exists(base: str, api_key: str, model_id: str) -> tuple[bool | None, list[str] | None]:
+    """Pre-flight a model id against the server's model list.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+        model_id: The model id to look for.
+
+    Returns:
+        (True, None) when present; (False, available-ids) when absent;
+        (None, None) when the check itself fails — the real bench call
+        should decide then.
+    """
     try:
         data = api("GET", f"{base}/models", api_key)
     except Exception:
@@ -96,8 +139,17 @@ def model_exists(base, api_key, model_id):
     return False, ids
 
 
-def loaded_model_ids(base, api_key):
-    """Snapshot the ids of currently loaded models (None if unknown)."""
+def loaded_model_ids(base: str, api_key: str) -> list[str] | None:
+    """Snapshot the ids of currently loaded models.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+
+    Returns:
+        Loaded model ids, or None when the snapshot fails — the caller
+        then skips restore instead of acting on partial knowledge.
+    """
     try:
         data = api("GET", f"{base}/models", api_key)
     except Exception:
@@ -110,12 +162,21 @@ def loaded_model_ids(base, api_key):
     ]
 
 
-def restore_loaded_models(base, api_key, model_ids, timeout):
-    """Re-load models the benchmark unloaded (POST /models/{id}/load).
+def restore_loaded_models(
+    base: str, api_key: str, model_ids: list[str], timeout: float
+) -> None:
+    """Re-load models the benchmark unloaded.
 
     The server's benchmark unloads every loaded model and only unloads the
     bench model at the end — nothing restores prior state. Best effort:
-    failures are reported but never mask the bench results."""
+    failures are reported but never mask the bench results.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+        model_ids: Model ids to re-load.
+        timeout: Per-request timeout in seconds.
+    """
     from urllib.parse import quote
 
     for model_id in model_ids:
@@ -132,8 +193,29 @@ def restore_loaded_models(base, api_key, model_ids, timeout):
             print(f"WARNING: failed to restore {model_id}: {e}")
 
 
-def run_one(base, api_key, body, timeout, poll_interval=5):
-    """Start one bench and poll to a terminal status. Returns results dict."""
+def run_one(
+    base: str,
+    api_key: str,
+    body: dict[str, Any],
+    timeout: float,
+    poll_interval: int = 5,
+) -> dict[str, Any]:
+    """Start one bench and poll it to a terminal status.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+        body: /bench/start payload (model, pp, batch, gen, profile).
+        timeout: Overall deadline for the poll loop, in seconds.
+        poll_interval: Seconds between result polls.
+
+    Returns:
+        The final results dict (status completed, cancelled, or error).
+
+    Raises:
+        SystemExit: When the bench cannot start, a poll fails, or the
+            deadline passes (the bench is cancelled first).
+    """
     try:
         start = api("POST", f"{base}/bench/start", api_key, body)
     except urllib.error.HTTPError as e:
@@ -153,6 +235,7 @@ def run_one(base, api_key, body, timeout, poll_interval=5):
         if data.get("status") in ("completed", "cancelled", "error"):
             return data
     print("Timed out; cancelling")
+    # Best effort: a failed cancel still leaves the bench to expire server-side.
     try:
         api("POST", f"{base}/bench/{bench_id}/cancel", api_key, {})
     except Exception:
@@ -160,7 +243,15 @@ def run_one(base, api_key, body, timeout, poll_interval=5):
     sys.exit(1)
 
 
-def main():
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse CLI arguments.
+
+    Args:
+        argv: Argument list; defaults to sys.argv[1:].
+
+    Returns:
+        The parsed namespace (separated from main for testability).
+    """
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--model", required=True)
     p.add_argument("--pp", type=int, nargs="*", default=[1024, 4096, 32768, 131072])
@@ -176,96 +267,147 @@ def main():
     p.add_argument("--host"), p.add_argument("--port", type=int), p.add_argument("--api-key")
     p.add_argument("--timeout", type=int, default=3600)
     p.add_argument("--out", default=None, help="path for raw JSON results")
-    args = p.parse_args()
+    return p.parse_args(argv)
 
+
+def validate_test_args(args: argparse.Namespace) -> None:
+    """Reject pp/batch values outside the server's supported sets.
+
+    Args:
+        args: Parsed CLI args; --pp and --batch are checked here.
+
+    Raises:
+        SystemExit: With the invalid and valid values, when a test point is
+            unsupported or both lists are empty.
+    """
     bad_pp = [x for x in args.pp if x not in VALID_PP]
     bad_batch = [x for x in args.batch if x not in VALID_BATCH]
     if bad_pp or bad_batch or (not args.pp and not args.batch):
         sys.exit(f"Invalid: pp={bad_pp} (valid {VALID_PP}), batch={bad_batch} (valid {VALID_BATCH})")
 
-    limit = load_context_limit(args.model)
-    if limit is not None:
-        too_big = [x for x in args.pp if x > limit]
-        if too_big:
-            args.pp = [x for x in args.pp if x <= limit]
-            print(f"Dropping pp {too_big} — exceeds {args.model} max_context_window ({limit})")
-            if not args.pp:
-                sys.exit(f"No pp values left after dropping those above the {limit}-token context window")
-        if args.batch and 1024 > limit:
-            sys.exit(f"Batch tests always run at pp1024, which exceeds the {limit}-token context window")
 
+def apply_context_limit(args: argparse.Namespace) -> None:
+    """Fit the requested test points to the model's context window.
+
+    Args:
+        args: Parsed CLI args; --pp may be trimmed in place.
+
+    Raises:
+        SystemExit: When every pp value exceeds the window, or batch runs
+            are requested although pp1024 does not fit.
+    """
+    limit = load_context_limit(args.model)
+    if limit is None:
+        return
+    too_big = [x for x in args.pp if x > limit]
+    if too_big:
+        args.pp = [x for x in args.pp if x <= limit]
+        print(f"Dropping pp {too_big} — exceeds {args.model} max_context_window ({limit})")
+        if not args.pp:
+            sys.exit(f"No pp values left after dropping those above the {limit}-token context window")
+    if args.batch and 1024 > limit:
+        sys.exit(f"Batch tests always run at pp1024, which exceeds the {limit}-token context window")
+
+
+def resolve_connection(args: argparse.Namespace) -> tuple[str, str]:
+    """Resolve the connection and require an api key.
+
+    Args:
+        args: Parsed CLI args.
+
+    Returns:
+        (base URL, api_key) for the admin API.
+
+    Raises:
+        SystemExit: When no api_key is available from --api-key or
+            ~/.omlx/settings.json.
+    """
     host, port, api_key = load_connection(args)
     if not api_key:
         sys.exit("No api_key found in ~/.omlx/settings.json and none passed via --api-key")
-    base = f"http://{host}:{port}/admin/api"
+    return f"http://{host}:{port}/admin/api", api_key
 
-    ok, ids = model_exists(base, api_key, args.model)
+
+def preflight_model(base: str, api_key: str, model_id: str) -> None:
+    """Fail fast when the model id is not on the server.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+        model_id: The model id to verify.
+
+    Raises:
+        SystemExit: With the available ids when the model is absent.
+    """
+    ok, ids = model_exists(base, api_key, model_id)
     if ok is False:
         sys.exit(
-            f"Model not found on server: {args.model}\n"
+            f"Model not found on server: {model_id}\n"
             f"Available: {', '.join(ids)}\n"
             "(Model ids must use the exact server form, e.g. GLM-5.3-Flash-oQ4-mtp)"
         )
 
-    # The server-side benchmark unloads ALL loaded models (and the bench model
-    # at the end) without restoring anything, so snapshot the resident set now
-    # and bring it back after the run — including on failure paths.
-    previously_loaded = loaded_model_ids(base, api_key)
-    if previously_loaded:
-        print(
-            "Loaded models (restored after bench): "
-            + ", ".join(previously_loaded)
-        )
 
-    try:
-        if args.warmup > 0:
-            warm_body = {
-                "model_id": args.model,
-                "prompt_lengths": [1024],
-                "batch_sizes": [],
-                "generation_length": 128,
-                "context_profile": args.profile,
-            }
-            for i in range(args.warmup):
-                res = run_one(base, api_key, warm_body, args.timeout)
-                if res.get("status") != "completed" or res.get("error"):
-                    sys.exit(f"warm-up bench {i + 1} failed: {res.get('error') or res.get('status')}")
-                print(f"Warm-up bench {i + 1}/{args.warmup} completed (results discarded)")
+def snapshot_loaded_models(base: str, api_key: str) -> list[str]:
+    """Record which models are loaded so the bench can restore them.
 
-        body = {
-            "model_id": args.model,
-            "prompt_lengths": args.pp,
-            "batch_sizes": args.batch,
-            "generation_length": args.gen,
-            "context_profile": args.profile,
-        }
+    The server-side benchmark unloads everything without restoring anything,
+    so this snapshot is taken before any bench starts.
 
-        all_runs = []
-        label = args.label or f"{args.model.replace('/', '_')}-{time.strftime('%Y%m%d-%H%M%S')}"
-        for run_i in range(1, args.runs + 1):
-            if run_i > 1:
-                print(f"\n=== Run {run_i}/{args.runs} ===")
-            results = run_one(base, api_key, body, args.timeout)
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
 
-            out = out_path_for(args, run_i, results, label)
-            out.write_text(json.dumps(results, indent=2))
-            print(f"Raw results: {out}\nStatus: {results.get('status')}")
-            if results.get("error"):
-                sys.exit(f"Bench error: {results['error']}")
-            if results.get("status") != "completed":
-                sys.exit(f"Bench ended with status: {results.get('status')}")
-            all_runs.append(results)
-
-        print_tables(all_runs)
-        if args.runs > 1:
-            print_stats(all_runs)
-    finally:
-        if previously_loaded:
-            print("\nRestoring previously loaded models...")
-            restore_loaded_models(base, api_key, previously_loaded, args.timeout)
+    Returns:
+        The loaded model ids (empty when none are loaded or the snapshot
+        fails — restore is then skipped).
+    """
+    ids = loaded_model_ids(base, api_key) or []
+    if ids:
+        print("Loaded models (restored after bench): " + ", ".join(ids))
+    return ids
 
 
-def out_path_for(args, run_i, results, label):
+def run_warmups(base: str, api_key: str, args: argparse.Namespace) -> None:
+    """Run the requested number of throwaway warm-up benches.
+
+    Warm-ups run pp1024 only, no batches, gen 128, so JIT/shader caches are
+    hot before recording.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+        args: Parsed CLI args; --warmup and --profile are used here.
+
+    Raises:
+        SystemExit: When a warm-up bench fails.
+    """
+    warm_body: dict[str, Any] = {
+        "model_id": args.model,
+        "prompt_lengths": [1024],
+        "batch_sizes": [],
+        "generation_length": 128,
+        "context_profile": args.profile,
+    }
+    for i in range(args.warmup):
+        res = run_one(base, api_key, warm_body, args.timeout)
+        if res.get("status") != "completed" or res.get("error"):
+            sys.exit(f"warm-up bench {i + 1} failed: {res.get('error') or res.get('status')}")
+        print(f"Warm-up bench {i + 1}/{args.warmup} completed (results discarded)")
+
+
+def out_path_for(args: argparse.Namespace, run_i: int, label: str) -> Path:
+    """Compute the raw-JSON output path for one run.
+
+    Args:
+        args: Parsed CLI args; --out overrides the default location.
+        run_i: 1-based run number.
+        label: Shared file id for this invocation.
+
+    Returns:
+        --out unchanged for a single run, a -runK sibling for multiple,
+        or <repo-root>/benchmarks/<label>[-runK].json by default.
+    """
     if args.out:
         p = Path(args.out)
         if args.runs > 1:
@@ -277,42 +419,106 @@ def out_path_for(args, run_i, results, label):
     return out_dir / name
 
 
-def fmt_stats(vals):
-    m = statistics.mean(vals)
-    s = statistics.stdev(vals) if len(vals) > 1 else 0.0
-    return f"{m:.1f} ± {s:.1f} (CV {100 * s / m:.1f}%) [{min(vals):.1f}–{max(vals):.1f}]"
+def run_recorded_benches(
+    base: str, api_key: str, args: argparse.Namespace
+) -> list[dict[str, Any]]:
+    """Run the recorded benches and persist each run's raw JSON.
+
+    Args:
+        base: Admin API base URL.
+        api_key: Bearer token.
+        args: Parsed CLI args; --runs, --label, --out, and the bench body
+            fields are used here.
+
+    Returns:
+        The result dicts of all completed runs, in run order.
+
+    Raises:
+        SystemExit: When a bench ends with an error or a non-completed
+            status.
+    """
+    body: dict[str, Any] = {
+        "model_id": args.model,
+        "prompt_lengths": args.pp,
+        "batch_sizes": args.batch,
+        "generation_length": args.gen,
+        "context_profile": args.profile,
+    }
+    label = args.label or f"{args.model.replace('/', '_')}-{time.strftime('%Y%m%d-%H%M%S')}"
+    all_runs: list[dict[str, Any]] = []
+    for run_i in range(1, args.runs + 1):
+        if run_i > 1:
+            print(f"\n=== Run {run_i}/{args.runs} ===")
+        results = run_one(base, api_key, body, args.timeout)
+
+        out = out_path_for(args, run_i, label)
+        out.write_text(json.dumps(results, indent=2))
+        print(f"Raw results: {out}\nStatus: {results.get('status')}")
+        if results.get("error"):
+            sys.exit(f"Bench error: {results['error']}")
+        if results.get("status") != "completed":
+            sys.exit(f"Bench ended with status: {results.get('status')}")
+        all_runs.append(results)
+    return all_runs
 
 
-def print_stats(all_runs):
-    def collect(test_type, key, pp=None, batch_size=None):
-        return [
-            r[key]
-            for res in all_runs
-            for r in res["results"]
-            if r.get("test_type") == test_type
-            and (pp is None or r.get("pp") == pp)
-            and (batch_size is None or r.get("batch_size") == batch_size)
-        ]
+def print_stats(all_runs: list[dict[str, Any]]) -> None:
+    """Print the aggregate table over all recorded runs.
 
+    Args:
+        all_runs: Result dicts from every recorded run.
+    """
     print(f"\n### Aggregate over {len(all_runs)} runs (mean ± stddev (CV%) [min–max])")
     print("\n| pp | Prefill tok/s | Decode tok/s | TTFT ms |")
     print("|---|---|---|---|")
-    for pp in sorted({r.get("pp", 0) for res in all_runs for r in res["results"] if r.get("test_type") == "single"}):
+    pps = sorted({r.get("pp", 0) for res in all_runs for r in res["results"] if r.get("test_type") == "single"})
+    for pp in pps:
         print(
-            f"| {pp} | {fmt_stats(collect('single', 'processing_tps', pp=pp))} "
-            f"| {fmt_stats(collect('single', 'gen_tps', pp=pp))} "
-            f"| {fmt_stats(collect('single', 'ttft_ms', pp=pp))} |"
+            f"| {pp} | {fmt_stats(collect(all_runs, 'single', 'processing_tps', pp=pp))} "
+            f"| {fmt_stats(collect(all_runs, 'single', 'gen_tps', pp=pp))} "
+            f"| {fmt_stats(collect(all_runs, 'single', 'ttft_ms', pp=pp))} |"
         )
     batch_sizes = sorted({r.get("batch_size", 0) for res in all_runs for r in res["results"] if r.get("test_type") == "batch"})
     if batch_sizes:
         print("\n| Batch | Aggregate decode tok/s |")
         print("|---|---|")
         for b in batch_sizes:
-            print(f"| {b}x | {fmt_stats(collect('batch', 'tg_tps', batch_size=b))} |")
+            print(f"| {b}x | {fmt_stats(collect(all_runs, 'batch', 'tg_tps', batch_size=b))} |")
 
 
-def print_tables(all_runs):
-    """Print per-run tables; the last run's baseline is used for speedup."""
+def print_batch_rows(singles: list[dict[str, Any]], batches: list[dict[str, Any]]) -> None:
+    """Print the batch table rows, relative to the pp1024 single rate.
+
+    Args:
+        singles: Single-test rows of the last recorded run.
+        batches: Batch-test rows of the last recorded run.
+    """
+    if not batches:
+        return
+    baseline = next(
+        (
+            r.get("gen_tps")
+            for r in singles
+            if r.get("pp") == 1024 or r.get("requested_pp") == 1024
+        ),
+        None,
+    )
+    print("\n| Batch | pp | Aggregate decode tok/s | vs 1x |")
+    print("|---|---|---|---|")
+    if baseline:
+        print(f"| 1x (single) | 1024 | {baseline} | 1.00 |")
+    for r in sorted(batches, key=lambda r: r.get("batch_size", 0)):
+        speedup = f"{r['tg_tps'] / baseline:.2f}" if baseline else "-"
+        print(f"| {r.get('batch_size')}x | {r.get('pp')} | {r.get('tg_tps')} | {speedup} |")
+
+
+def print_tables(all_runs: list[dict[str, Any]]) -> None:
+    """Print the per-run tables for the last recorded run.
+
+    Args:
+        all_runs: Result dicts from every recorded run; only the last run
+            is tabulated, and its pp1024 decode rate is the speedup baseline.
+    """
     last = all_runs[-1]
     singles = [r for r in last["results"] if r.get("test_type") == "single"]
     batches = [r for r in last["results"] if r.get("test_type") == "batch"]
@@ -324,23 +530,30 @@ def print_tables(all_runs):
             f"| {r.get('pp')} | {r.get('tg')} | {r.get('processing_tps')} "
             f"| {r.get('gen_tps')} | {r.get('ttft_ms')} |"
         )
+    print_batch_rows(singles, batches)
 
-    baseline = next(
-        (
-            r.get("gen_tps")
-            for r in singles
-            if r.get("pp") == 1024 or r.get("requested_pp") == 1024
-        ),
-        None,
-    )
-    if batches:
-        print("\n| Batch | pp | Aggregate decode tok/s | vs 1x |")
-        print("|---|---|---|---|")
-        if baseline:
-            print(f"| 1x (single) | 1024 | {baseline} | 1.00 |")
-        for r in sorted(batches, key=lambda r: r.get("batch_size", 0)):
-            speedup = f"{r['tg_tps'] / baseline:.2f}" if baseline else "-"
-            print(f"| {r.get('batch_size')}x | {r.get('pp')} | {r.get('tg_tps')} | {speedup} |")
+
+def main() -> None:
+    """Orchestrate the benchmark: validate, preflight, warm up, record,
+    report, then restore the previously loaded models."""
+    args = parse_args()
+    validate_test_args(args)
+    apply_context_limit(args)
+    base, api_key = resolve_connection(args)
+    preflight_model(base, api_key, args.model)
+
+    previously_loaded = snapshot_loaded_models(base, api_key)
+    try:
+        if args.warmup > 0:
+            run_warmups(base, api_key, args)
+        all_runs = run_recorded_benches(base, api_key, args)
+        print_tables(all_runs)
+        if args.runs > 1:
+            print_stats(all_runs)
+    finally:
+        if previously_loaded:
+            print("\nRestoring previously loaded models...")
+            restore_loaded_models(base, api_key, previously_loaded, args.timeout)
 
 
 if __name__ == "__main__":
