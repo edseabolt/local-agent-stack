@@ -51,8 +51,8 @@ Each model also has three OpenCode variants: `precise` (0.1), `balanced` (0.5), 
 
 From [`omlx/settings.json`](omlx/settings.json) and [`omlx/model_settings.json`](omlx/model_settings.json):
 
-- **Memory:** aggressive memory guard. (A 384 GB `memory_guard_custom_ceiling_gb` is set but only applies with tier `custom`, so it's inert here.)
-- **Cache:** 37 GB hot (in-memory) prefix cache plus a 128 GB SSD cache directory (hot-cache-only mode is off). `preserve_mid_system_cache` keeps the shared system prompt cached across agent turns.
+- **Memory:** balanced memory guard. (A 384 GB `memory_guard_custom_ceiling_gb` is set but only applies with tier `custom`, so it's inert here.)
+- **Cache:** 35 GB hot (in-memory) prefix cache plus a 111 GB SSD cache directory (hot-cache-only mode is off). `preserve_mid_system_cache` keeps the shared system prompt cached across agent turns.
 - **Scheduler:** 4 concurrent requests with chunked prefill, context-priority prefill, and decode fairness, so several agents (or several Orca worktrees) can share one server without one starving the others.
 - **Decode:** aggressive burst decode, with the GPU kept warm every 0.5 s.
 - **Context:** the server allows 256K per model (1M for GLM, 128K for Qwen3.8-27B). The OpenCode `limit.context` values are 256K for GLM, Qwen3.8-Flash-Next, and Ornith, and 128K for Qwen3.8-27B, so OpenCode compacts at 256K even though the GLM server entry allows 1M.
@@ -67,7 +67,7 @@ From [`omlx/settings.json`](omlx/settings.json) and [`omlx/model_settings.json`]
 ## Notes
 
 - The server binds `0.0.0.0` so other machines on the LAN can use it. If you only use it locally, set `host` to `127.0.0.1`.
-- The permission list auto-allows read-only shell commands (`git log`, `rg`, `jq`, and similar) plus `npm run *` and `gh *`; destructive git operations (`git push --force*`, `git worktree remove/prune`, `gh pr merge`) ask first, and everything else (edits, any other shell command) asks.
+- The permission list auto-allows read-only shell commands (`git log`, `rg`, `jq`, and similar) plus `npm run *`, `gh *`, and a few low-risk utilities (`find *`, `sleep *`, `git branch *`, `git stash *`); destructive git operations (`git push * --force*`, `git worktree remove/prune`, `gh pr merge`) ask first, and everything else (edits, any other shell command) asks.
 - `model_settings.json` also keeps entries for the unsuffixed base checkpoints (for example `GLM-5.3-Flash`). Only the `-oQ6-mtp` / `-oQ8-mtp` entries are used by this setup.
 
 ## Benchmarks
@@ -78,8 +78,9 @@ four prompt lengths plus a 1x–8x batching sweep.
 
 ![Benchmark comparison: decode and prefill per model, oMLX v0.7.2 vs v0.7.3](benchmarks/benchmarks.svg)
 
-**Current — oMLX v0.7.3 (2026-11-15):** full tables with mean ± stddev,
-median, and min–max, plus methodology and per-model observations, in
+**Current — oMLX v0.7.3 (2026-11-15):** full tables — single-request cells
+with mean ± stddev, median, and min–max (batching cells: mean ± stddev and
+min–max) — plus methodology and per-model observations, in
 [docs/benchmarks-current.md](docs/benchmarks-current.md).
 
 **Historical — oMLX v0.7.2 (2026-10-21/22):** the previous run's tables

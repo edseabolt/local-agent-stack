@@ -2,7 +2,6 @@
 .opencode/
 *.local.json
 *.local.jsonc
-bench-*.json
 
 # macOS
 .DS_Store

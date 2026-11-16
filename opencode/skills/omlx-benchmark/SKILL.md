@@ -15,7 +15,7 @@ results into a README-ready table. Follow each step in order.
       `server.host` (treat `0.0.0.0` as `127.0.0.1` for the client), `server.port`
       (fallback 8000). All admin API calls use `Authorization: Bearer <api_key>`.
 - [ ] Ask the user (or infer from context) which model(s) to benchmark. Model IDs
-      as listed by the server, e.g. `GLM-5.3-Flash-oQ4-mtp`.
+      as listed by the server, e.g. `GLM-5.3-Flash-oQ6-mtp`.
 - [ ] The bundled script `scripts/run_bench.py` handles start/poll/parse. Verify it
       is next to this SKILL.md; all paths below are relative to this skill's base dir.
 - [ ] Keep the default cache warm-up enabled (`--warmup 1`). Do not pass
@@ -172,8 +172,9 @@ kept in the table so the speedup column has its reference. The methodology line
 is emitted verbatim by the summarizer, adapted to what was actually run:
 
 > oMLX throughput benchmark via the admin API, MTP enabled, server defaults,
-> Code (Python) prompts, 256 generated tokens, decode = single-request gen_tps,
-> batch = aggregate tg_tps at pp1024.
+> code_python prompts, 256 generated tokens, decode = single-request gen_tps,
+> batch = aggregate tg_tps at pp1024. n=3 run(s), reported as
+> mean ± stddev (CV%) [min–max].
 
 ## Hard Rules
 

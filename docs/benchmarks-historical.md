@@ -50,7 +50,7 @@ numbers are omitted as misleading.)
 Observations below refer to the October 2026 run; several hold in the
 November run as well — see the current tables.
 
-- **Ornith-1.5-35B-A3B (oQ8) is the speed king below ~64K context** despite being the largest model — MoE with ~3B active parameters buys ~2–3× the prefill and the best decode of the set. Its decode even *rises* with context (133 → 158 tok/s from pp1024 to pp32768), unlike every other model here.
+- **Ornith-1.5-35B-A3B (oQ8) is the speed king below ~64K context** despite being the largest model — MoE with ~3B active parameters buys ~4–6× the prefill of the dense models at short context (still ~2× at pp131072) and the best decode of the set. Its decode even *rises* with context (133 → 158 tok/s from pp1024 to pp32768), unlike every other model here.
 - **Qwen3.8-Flash-Next (oQ4) has the flattest prefill**: ~1.35K tok/s from pp4096 to pp131072 with ≤ 1% CV. Its long-context TTFT is the lowest of all four (101 s at pp131072 vs GLM's 264 s).
 - **GLM-5.3-Flash's decode improves with context length** (45 → 87 tok/s from pp4096 to pp131072) — the opposite of everything else, which suits its role as the 1M-context reviewer. Its TTFT at long context is the worst of the set, though.
 - **Long-context cost is model-specific**: GLM pays in TTFT (264 s at pp131072), Qwen3.8-27B pays in everything (266 tok/s prefill, 41 tok/s decode, 492 s TTFT — 8+ minutes). Ornith's prefill falls off a 52% cliff past pp32768 but its TTFT stays reasonable.

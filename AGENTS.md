@@ -1,6 +1,10 @@
 # AGENTS.md
 
-This is a **config-only repo** — no code, no build, no tests. It holds templates for two config trees; changes ship by copying files out of this repo, never by editing the installed copies.
+This is a **config-plus-tooling repo** — no build; Python tooling (chart
+generation, benchmark and install scripts) ships with stdlib `unittest`
+tests, run directly with `python3 -m unittest`. It holds templates for two
+config trees; changes ship by copying files out of this repo, never by
+editing the installed copies.
 
 ## Writing & documentation (standing instruction, Nov 2026)
 
@@ -32,11 +36,11 @@ message.
 
 ## The model-name contract (things drift silently)
 
-Four places must agree for every model, using the exact server ID form `<Name>-oQ<4|8>-mtp` (e.g. `GLM-5.3-Flash-oQ4-mtp`):
+Four places must agree for every model, using the exact server ID form `<Name>-oQ<4|6|8>-mtp` (e.g. `GLM-5.3-Flash-oQ6-mtp`):
 
 1. `opencode/opencode.jsonc` → `providers.oMLX.models` keys (prefix `oQ/`)
 2. `opencode/opencode.jsonc` → `agents.<role>.model`
-3. `omlx/model_settings.json` → `models` keys (unsuffixed base entries also exist but are unused; only `-oQ4-mtp`/`-oQ8-mtp` are live)
+3. `omlx/model_settings.json` → `models` keys (unsuffixed base entries also exist but are unused; only the `-oQ4-mtp`/`-oQ6-mtp`/`-oQ8-mtp` entries are live)
 4. README model table (Model + Quant columns compose the ID)
 
 Adding a model means touching all four. Context limits must also agree: `limit.context` in opencode.jsonc = `max_context_window` in model_settings.json — OpenCode compacts based on its value, so a mismatch either truncates or never compacts.

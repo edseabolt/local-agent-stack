@@ -71,7 +71,7 @@ parallelism.
 - Ornith-1.5-35B-A3B (oQ8) prefill falls 52% past pp32768 (2290.5 to
   1107.8 tok/s), but its long-context TTFT (about 118 s) stays second-best.
 - Ornith-1.5-35B-A3B (oQ8) short-context numbers are the loosest of the
-  run (decode CV up to 19.5% at pp4096); long-context numbers are tight
+  run (decode CV up to 19.5% at pp4096); at pp131072 they are tight
   (CV ≤ 2.1%).
 
 ## Qwen3.8-27B (oQ8)
@@ -130,9 +130,9 @@ parallelism.
   pp4096).
 - Qwen3.8-Flash-Next (oQ4) has the lowest long-context TTFT of the four
   (about 99 s at pp131072).
-- Qwen3.8-Flash-Next (oQ4) decode is the noisiest metric in the run
-  (CV up to 14.6% at pp4096) and falls from 103.6 to 58.2 tok/s as
-  context grows.
+- Qwen3.8-Flash-Next (oQ4) decode is the noisiest metric among the
+  non-Ornith models (CV up to 14.6% at pp4096; Ornith's pp4096 decode CV
+  is 19.5%) and falls from 103.6 to 58.2 tok/s as context grows.
 
 ## Observations
 
@@ -141,7 +141,8 @@ parallelism.
   [benchmarks-historical.md](benchmarks-historical.md)).
 - Ornith-1.5-35B-A3B (oQ8) remains the speed king below ~64K context
   despite being the largest model; MoE with ~3B active parameters buys
-  roughly 2–3× the prefill of the dense models.
+  roughly 4–6× the prefill of the dense models at short context, still
+  about 2× at pp131072.
 - Long-context cost is model-specific: Qwen3.8-Flash-Next (oQ4) keeps
   prefill flat and TTFT lowest, GLM-5.3-Flash (oQ6) keeps decode rising
   but pays in TTFT, and Qwen3.8-27B (oQ8) pays in everything.
