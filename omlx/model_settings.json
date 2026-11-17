@@ -3,8 +3,10 @@
   "models": {
     "GLM-5.3-Flash-oQ6-mtp": {
       "max_context_window": 1048576,
-      "temperature": 1.0,
+      "temperature": 0.7,
       "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "enable_thinking": true,
@@ -61,6 +63,7 @@
       "temperature": 1.0,
       "top_p": 0.95,
       "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
@@ -116,6 +119,7 @@
       "temperature": 1.0,
       "top_p": 0.95,
       "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
@@ -171,6 +175,7 @@
       "temperature": 1.0,
       "top_p": 0.95,
       "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
@@ -225,6 +230,7 @@
       "max_context_window": 1048576,
       "temperature": 1.0,
       "top_p": 0.95,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
@@ -280,6 +286,7 @@
       "temperature": 1.0,
       "top_p": 0.95,
       "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
@@ -335,6 +342,7 @@
       "temperature": 1.0,
       "top_p": 0.95,
       "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
@@ -390,6 +398,7 @@
       "temperature": 1.0,
       "top_p": 0.95,
       "top_k": 20,
+      "min_p": 0.05,
       "force_sampling": false,
       "chat_template_kwargs": {
         "reasoning_effort": "low"
