@@ -4,6 +4,8 @@ My local agentic coding setup: open-weight LLMs served by oMLX on a Mac Studio, 
 
 The pipeline gates themselves (plan approval, test evidence before review, reviewer round caps) are enforced by [turnstile](https://github.com/edseabolt/turnstile). This repo is the model and server side. The [`omlx-benchmark` skill](opencode/skills/omlx-benchmark/SKILL.md) runs oMLX's admin-API throughput benchmark (single-request prefill/decode at chosen context lengths, plus 2x/4x/8x concurrent batches) and prints README-ready tables; the [`omlx-install` skill](opencode/skills/omlx-install/SKILL.md) applies any template change to the live config.
 
+My models can be found on [huggingface](https://huggingface.co/rwtd5150)
+
 ## Contents
 
 - [Hardware](#hardware)
